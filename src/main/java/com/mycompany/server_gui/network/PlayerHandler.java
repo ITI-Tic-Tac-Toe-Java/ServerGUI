@@ -1,5 +1,6 @@
-package com.mycompany.gameserver;
+package com.mycompany.server_gui.network;
 
+import com.mycompany.server_gui.utils.OnErrorListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,15 +15,20 @@ public class PlayerHandler extends Thread {
     PlayerHandler opponent;
     String symbol;
 
-    public PlayerHandler(Socket socket, String symbol) throws IOException {
+    public PlayerHandler(Socket socket, String symbol,OnErrorListener errorListener) {
         this.socket = socket;
         this.symbol = symbol;
-        br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        ps = new PrintStream(socket.getOutputStream());
-        ps.println(symbol);
+        try {
+            br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            ps = new PrintStream(socket.getOutputStream());
+        } catch (IOException ex) {
+           errorListener.onError(ex);
+        }finally{
+            ps.println(symbol);
+        }
     }
 
-    void setOpponent(PlayerHandler opponent) {
+    public void setOpponent(PlayerHandler opponent) {
         this.opponent = opponent;
     }
 
@@ -36,15 +42,16 @@ public class PlayerHandler extends Thread {
         } catch (IOException e) {
             System.out.println("Player disconnected: " + symbol);
         } finally {
-            close();
+            closeResources();
         }
     }
 
-    void close() {
+    private void closeResources() {
         try {
             socket.close();
+            ps.close();
+            br.close();
         } catch (IOException e) {
         }
     }
 }
-

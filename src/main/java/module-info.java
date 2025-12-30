@@ -3,6 +3,7 @@ module com.mycompany.server_gui {
     requires javafx.fxml;
     requires java.base;
 
-    opens com.mycompany.server_gui to javafx.fxml;
+
+    opens com.mycompany.server_gui.controller to javafx.fxml;
     exports com.mycompany.server_gui;
 }

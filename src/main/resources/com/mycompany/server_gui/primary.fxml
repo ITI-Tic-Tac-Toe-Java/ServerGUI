@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="600.0" spacing="15.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.server_gui.PrimaryController">
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="600.0" spacing="15.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.server_gui.controller.PrimaryController">
     <children>
         <Label text="Tic-Tac-Toe Server" textFill="#2c3e50">
             <font>
@@ -19,13 +19,13 @@
             </VBox.margin>
         </Label>
 
-        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="400.0" style="-fx-background-color: #4a5568; -fx-background-radius: 10;" text="Start Server" textFill="WHITE">
+        <Button mnemonicParsing="false" fx:id = "startBtn" onAction="#onStart"  prefHeight="45.0" prefWidth="400.0" style="-fx-background-color: #4a5568; -fx-background-radius: 10;" text="Start Server" textFill="WHITE">
             <font>
                 <Font size="16.0" />
             </font>
         </Button>
 
-        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="400.0" style="-fx-background-color: #4a5568; -fx-background-radius: 10;" text="Stop Server" textFill="WHITE">
+        <Button mnemonicParsing="false" onAction="#onStop" fx:id="stopBtn" prefHeight="45.0" prefWidth="400.0" style="-fx-background-color: #4a5568; -fx-background-radius: 10;" text="Stop Server" textFill="WHITE">
             <font>
                 <Font size="16.0" />
             </font>
