@@ -2,21 +2,25 @@ package com.mycompany.server_gui.network;
 
 import com.mycompany.server_gui.network.PlayerHandler;
 import com.mycompany.server_gui.utils.OnErrorListener;
+import com.mycompany.server_gui.utils.PlayerSymbol;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class GameServer extends Thread {
 
-    boolean keepRunning;
+    private static final ArrayList<PlayerHandler> players = new ArrayList();
+    boolean keepRunning = true;
     OnErrorListener errorListener;
+    Consumer<Integer> onNewClientConnection;
     ServerSocket serverSocket;
-    PlayerHandler playerX;
-    PlayerHandler playerO;
+    PlayerHandler player;
 
-    public GameServer(int port, OnErrorListener errorListener) {
+    public GameServer(int port, OnErrorListener errorListener, Consumer<Integer> onNewClientConnection) {
+        this.onNewClientConnection = onNewClientConnection;
         this.errorListener = errorListener;
-
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
@@ -29,28 +33,20 @@ public class GameServer extends Thread {
         while (keepRunning) {
             try {
                 Socket s1 = serverSocket.accept();
-                playerX = new PlayerHandler(s1, "X", errorListener);
+                player = new PlayerHandler(s1, this, PlayerSymbol.X, errorListener);
+                player.start();
+                players.add(player);
+                onNewClientConnection.accept(getNumberOfPlayers());
             } catch (IOException ex) {
                 if (keepRunning) {
-                    errorListener.onError(ex);
+                    errorListener.onError(new IOException("Internal Server Error :" + ex.getLocalizedMessage()));
                 }
             }
-
-            try {
-                Socket s2 = serverSocket.accept();
-                playerO = new PlayerHandler(s2, "O", errorListener);
-            } catch (IOException ex) {
-                if (keepRunning) {
-                    errorListener.onError(ex);
-                }
-            }
-
-            playerX.start();
-            playerO.start();
-
-            playerX.setOpponent(playerO);
-            playerO.setOpponent(playerX);
         }
+    }
+
+    public int getNumberOfPlayers() {
+        return players.size();
     }
 
     public void closeServer() {
@@ -59,7 +55,7 @@ public class GameServer extends Thread {
             try {
                 serverSocket.close();
             } catch (IOException ex) {
-                errorListener.onError(ex);
+                errorListener.onError(new IOException("Error in closing socket" + ex.getLocalizedMessage()));
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.mycompany.server_gui.network;
 
 import com.mycompany.server_gui.utils.OnErrorListener;
+import com.mycompany.server_gui.utils.PlayerSymbol;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,21 +10,26 @@ import java.net.Socket;
 
 public class PlayerHandler extends Thread {
 
-    Socket socket;
-    BufferedReader br;
-    PrintStream ps;
-    PlayerHandler opponent;
-    String symbol;
+    private Socket socket;
+    private BufferedReader br;
+    private PrintStream ps;
+    private PlayerHandler opponent;
+    private GameServer server;
+    private PlayerSymbol symbol;
+    private OnErrorListener errorListener;
 
-    public PlayerHandler(Socket socket, String symbol,OnErrorListener errorListener) {
+    public PlayerHandler(Socket socket, GameServer server, PlayerSymbol symbol, OnErrorListener errorListener) {
         this.socket = socket;
         this.symbol = symbol;
+        this.server = server;
+        this.errorListener = errorListener;
+
         try {
             br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             ps = new PrintStream(socket.getOutputStream());
         } catch (IOException ex) {
-           errorListener.onError(ex);
-        }finally{
+            errorListener.onError(ex);
+        } finally {
             ps.println(symbol);
         }
     }
@@ -34,17 +40,11 @@ public class PlayerHandler extends Thread {
 
     @Override
     public void run() {
-        try {
-            String msg;
-            while ((msg = br.readLine()) != null) {
-                opponent.ps.println(msg);
-            }
-        } catch (IOException e) {
-            System.out.println("Player disconnected: " + symbol);
-        } finally {
-            closeResources();
-        }
+        String msg;
+        
     }
+    
+    public void setPlayerSymbol(PlayerSymbol sym){symbol = sym;}
 
     private void closeResources() {
         try {
@@ -52,6 +52,7 @@ public class PlayerHandler extends Thread {
             ps.close();
             br.close();
         } catch (IOException e) {
+            errorListener.onError(new IOException("Error in closing resource" + e.getLocalizedMessage()));
         }
     }
 }

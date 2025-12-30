@@ -21,11 +21,16 @@ public class PrimaryController {
     @FXML
     private Button stopBtn;
 
+    public void onNewClientConnection(int clientNo) {
+       Platform.runLater(() ->  usersLabel.setText(String.valueOf(clientNo)));
+    }
+
     public void initialize() {
         if (!isServerDown) {
             statusLabel.setText("Online");
             startBtn.setDisable(true);
             stopBtn.setDisable(false);
+
         } else {
             statusLabel.setText("Offline");
             stopBtn.setDisable(true);
@@ -41,7 +46,7 @@ public class PrimaryController {
                 Platform.runLater(() -> {
                     showAlert("Internal Server Error", e.getLocalizedMessage());
                 });
-            });
+            }, this::onNewClientConnection);
 
             gs.start();
 
