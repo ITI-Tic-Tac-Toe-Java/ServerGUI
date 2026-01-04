@@ -15,8 +15,8 @@ import java.sql.SQLException;
 public class DBUtil {
 
     private static final String URL = "jdbc:derby://localhost:1527/TicTacToeDB;create=true";
-    private static final String USER = "app";
-    private static final String PASS = "app";
+    private static final String USER = "root";
+    private static final String PASS = "root";
 
     private DBUtil() {
         // prevent instantiation

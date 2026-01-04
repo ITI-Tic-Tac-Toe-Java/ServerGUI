@@ -82,7 +82,7 @@ public class GameDao {
                 + "JOIN player p1 ON g.player_x_id = p1.player_id "
                 + "JOIN player p2 ON g.player_o_id = p2.player_id "
                 + "WHERE g.player_x_id = ? OR g.player_o_id = ?";
-
+        
         Connection con = DBUtil.getConnection();
         PreparedStatement ps = con.prepareStatement(query);
         ps.setInt(1, playerId);

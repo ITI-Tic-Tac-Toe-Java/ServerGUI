@@ -63,10 +63,12 @@ public class GameRoom {
             if (gameLogic.hasPlayerWon(sender)) {
                 sender.sendMessage("GAME_OVER:WIN");
                 getOpponent(sender).sendMessage("GAME_OVER:LOSE");
+                //save game
                 closeRoom();
             } else if (gameLogic.isDraw()) {
                 playerX.sendMessage("GAME_OVER:DRAW");
                 playerO.sendMessage("GAME_OVER:DRAW");
+                //save game
                 closeRoom();
             }
         }

@@ -4,7 +4,7 @@ import com.mycompany.server_gui.game.GameManager;
 import com.mycompany.server_gui.game.GameRoom;
 import com.mycompany.server_gui.model.Player;
 import com.mycompany.server_gui.model.Player.PlayerStatus;
-import com.mycompany.server_gui.utils.OnErrorListener;
+import com.mycompany.server_gui.utils.Functions;
 import com.mycompany.server_gui.utils.PlayerSymbol;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,40 +13,38 @@ import java.io.PrintStream;
 import java.net.Socket;
 
 public class PlayerHandler extends Thread {
+
     private final Socket socket;
     private BufferedReader br;
     private PrintStream ps;
-    private final OnErrorListener errorListener;
 
     // Player State
     private GameRoom currentRoom;
     private PlayerSymbol symbol;
     private Player player;
 
-    public PlayerHandler(Socket socket, OnErrorListener errorListener) {
+    public PlayerHandler(Socket socket) {
         this.socket = socket;
-        this.errorListener = errorListener;
 
         try {
             br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             ps = new PrintStream(socket.getOutputStream());
         } catch (IOException ex) {
-            errorListener.onError(ex);
+            Functions.showErrorAlert(ex);
         }
     }
 
     @Override
     public void run() {
-        String msg;
         try {
+            String msg;
             while ((msg = br.readLine()) != null) {
                 ServerProtocol.processMessage(msg, this);
             }
         } catch (IOException ex) {
-            errorListener.onError(new IOException("Problem in receving message : " + ex.getLocalizedMessage()));
-        } finally {
-            cleanup();
+            Functions.showErrorAlert(new IOException("Problem in receving message : " + ex.getLocalizedMessage()));
         }
+
     }
 
     public void sendMessage(String msg) {
@@ -76,11 +74,10 @@ public class PlayerHandler extends Thread {
                 br.close();
             }
         } catch (IOException e) {
-            errorListener.onError(new IOException("Error closing resources: " + e.getMessage()));
+            Functions.showErrorAlert(new IOException("Error closing resources: " + e.getMessage()));
         }
     }
 
-    // --- Getters & Setters ---
     public String getUsername() {
         return player.getUsername();
     }

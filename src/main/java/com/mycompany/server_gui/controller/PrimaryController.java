@@ -42,11 +42,7 @@ public class PrimaryController {
     @FXML
     void onStart() {
         if (isServerDown) {
-            gs = new GameServer(5008, (e) -> {
-                Platform.runLater(() -> {
-                    showAlert("Internal Server Error", e.getLocalizedMessage());
-                });
-            }, this::onNewClientConnection);
+            gs = new GameServer(5008, this::onNewClientConnection);
 
             gs.start();
 
@@ -64,13 +60,5 @@ public class PrimaryController {
             isServerDown = true;
             initialize();
         }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

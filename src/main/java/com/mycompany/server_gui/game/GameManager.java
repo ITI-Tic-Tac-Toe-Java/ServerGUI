@@ -37,20 +37,20 @@ public class GameManager {
 
     // --- Player Management ---
     public void addOnlinePlayer(PlayerHandler player) {
-        if (player.getUsername() != null) {
+        if (player != null && player.getUsername() != null) {
             onlinePlayers.put(player.getUsername(), player);
             broadcastPlayerList();
         }
     }
 
     public void removePlayer(PlayerHandler player) {
-        if (player.getUsername() != null) {
+        if (player != null && player.getUsername() != null) {
             onlinePlayers.remove(player.getUsername());
             broadcastPlayerList();
         }
     }
 
-    // THE MISSING METHOD
+    
     public PlayerHandler getHandlerByName(String username) {
         return onlinePlayers.get(username);
     }

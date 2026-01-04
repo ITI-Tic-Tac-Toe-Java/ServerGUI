@@ -36,6 +36,8 @@ public class ServerProtocol {
             return;
         }
 
+        System.out.println("entered process message");
+
         String[] parts = message.split(":");
         String type = parts[0];
 
@@ -43,8 +45,10 @@ public class ServerProtocol {
             case LOGIN: {
                 try {
                     // Format: LOGIN:username:password
+                    System.out.println("Login case");
                     handleLogin(parts, sender);
                 } catch (SQLException ex) {
+                    ex.printStackTrace();
                     sender.sendMessage(ERROR + ":" + ex.getLocalizedMessage());
                 }
             }
@@ -100,6 +104,7 @@ public class ServerProtocol {
 
     private static void handleLogin(String[] parts, PlayerHandler sender) throws SQLException {
         if (parts.length < 3) {
+
             return;
         }
 
@@ -108,14 +113,17 @@ public class ServerProtocol {
 
         Player p = playerDao.login(username, password);
 
+        System.out.println("Player : " + p);
+
         boolean isValid = p != null;
 
         if (isValid) {
             sender.setPlayer(p);
             sender.sendMessage("LOGIN_SUCCESS");
-            // Add to the main Lobby
+            System.out.println("LOGIN_SUCCESS Sent");
             GameManager.getInstance().addOnlinePlayer(sender);
         } else {
+            System.out.println("LOGIN_FAILED Sent");
             sender.sendMessage("LOGIN_FAILED");
         }
     }
@@ -140,6 +148,7 @@ public class ServerProtocol {
         if (parts.length < 3) {
             return;
         }
+        //INVITE_RESPONSE:Thaowpsta:ACCPETED
 
         String requester = parts[1];
         String response = parts[2];
@@ -148,6 +157,7 @@ public class ServerProtocol {
             GameManager.getInstance().startGame(requester, sender.getUsername());
         } else {
             PlayerHandler reqHandler = GameManager.getInstance().getHandlerByName(requester);
+
             if (reqHandler != null) {
                 reqHandler.sendMessage("INVITE_REJECTED:" + sender.getUsername());
             }
@@ -158,7 +168,9 @@ public class ServerProtocol {
         if (parts.length < 3) {
             return;
         }
+
         GameRoom room = sender.getGameRoom();
+
         if (room != null) {
             try {
                 int row = Integer.parseInt(parts[1]);
@@ -174,6 +186,7 @@ public class ServerProtocol {
         if (sender.getPlayer() == null) {
             return; // Guard clause
         }
+
         int myId = sender.getPlayer().getId();
 
         List<GameHistoryDTO> games = gameDao.getGameHistory(myId);
