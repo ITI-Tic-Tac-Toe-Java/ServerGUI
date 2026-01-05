@@ -75,7 +75,7 @@ public class GameDao {
 
         // Select games where the user played as X or O
         // We Join twice to get usernames for both X and O
-        String query = "SELECT g.game_id, g.played_at, g.winner_id, "
+        String query = "SELECT g.game_id, g.played_at, g.WINNER, "
                 + "p1.username AS x_name, p1.player_id AS x_id, "
                 + "p2.username AS o_name, p2.player_id AS o_id "
                 + "FROM game g "
@@ -91,7 +91,7 @@ public class GameDao {
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             int gameId = rs.getInt("game_id");
-            int winnerId = rs.getInt("winner_id");
+            int winnerId = rs.getInt("WINNER");
             int xId = rs.getInt("x_id");
             String xName = rs.getString("x_name");
             String oName = rs.getString("o_name");

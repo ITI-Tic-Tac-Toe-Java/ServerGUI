@@ -52,6 +52,7 @@ public class ServerProtocol {
                     sender.sendMessage(ERROR + ":" + ex.getLocalizedMessage());
                 }
             }
+            break;
 
             case REGISTER: {
                 try {
@@ -65,9 +66,11 @@ public class ServerProtocol {
 
             case GET_HISTORY: {
                 try {
+                    System.out.println("get history case");
                     handleGetHistory(sender);
                 } catch (SQLException ex) {
                     sender.sendMessage(ERROR + ":" + ex.getLocalizedMessage());
+                    ex.printStackTrace();
                 }
             }
             break;
@@ -190,6 +193,8 @@ public class ServerProtocol {
         int myId = sender.getPlayer().getId();
 
         List<GameHistoryDTO> games = gameDao.getGameHistory(myId);
+
+        System.out.println("History : " + gameDao.getGameHistory(myId));
 
         // Build a response string
         // Format: HISTORY_RESPONSE:id,opp,res,date;id,opp,res,date;...
