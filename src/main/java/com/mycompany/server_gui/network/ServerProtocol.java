@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.server_gui.network;
 
-/**
- *
- * @author DELL
- */
 import com.mycompany.server_gui.dao.GameDao;
 import com.mycompany.server_gui.dao.PlayerDao;
 import com.mycompany.server_gui.game.GameManager;
@@ -31,26 +23,24 @@ public class ServerProtocol {
     private static final GameDao gameDao = new GameDao();
     private static final PlayerDao playerDao = new PlayerDao();
 
-    public static void processMessage(String message, PlayerHandler sender) {
+    public static void processMessage(final String message, final PlayerHandler sender) {
         if (message == null || message.trim().isEmpty()) {
             return;
         }
 
-        System.out.println("entered process message");
-
-        String[] parts = message.split(":");
-        String type = parts[0];
+        final String[] parts = message.split(":");
+        final String type = parts[0];
 
         switch (type) {
             case LOGIN: {
                 try {
                     // Format: LOGIN:username:password
-                    System.out.println("Login case");
                     handleLogin(parts, sender);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                     sender.sendMessage(ERROR + ":" + ex.getLocalizedMessage());
                 }
+                break;
             }
 
             case REGISTER: {
@@ -58,6 +48,7 @@ public class ServerProtocol {
                     // Format: REGISTER:username:password
                     handleRegister(parts, sender);
                 } catch (SQLException ex) {
+                    ex.printStackTrace();
                     sender.sendMessage(ERROR + ":" + ex.getLocalizedMessage());
                 }
             }
@@ -79,7 +70,8 @@ public class ServerProtocol {
             case SEND_INVITE:
                 // Format: SEND_INVITE:targetUsername
                 if (parts.length > 1) {
-                    GameManager.getInstance().handleInvitation(sender.getUsername(), parts[1]);
+                    final String targetUsername = parts[1];
+                    GameManager.getInstance().handleInvitation(sender.getUsername(), targetUsername);
                 }
                 break;
 
@@ -102,98 +94,98 @@ public class ServerProtocol {
         }
     }
 
-    private static void handleLogin(String[] parts, PlayerHandler sender) throws SQLException {
+    private static void handleLogin(final String[] parts, final PlayerHandler sender) throws SQLException {
         if (parts.length < 3) {
 
             return;
         }
 
-        String username = parts[1];
-        String password = parts[2];
+        final String username = parts[1];
+        final String password = parts[2];
 
-        Player p = playerDao.login(username, password);
-
-        System.out.println("Player : " + p);
+        final Player p = playerDao.login(username, password);
 
         boolean isValid = p != null;
 
         if (isValid) {
             sender.setPlayer(p);
-            sender.sendMessage("LOGIN_SUCCESS");
-            System.out.println("LOGIN_SUCCESS Sent");
+            String message = new StringBuilder("LOGIN_SUCCESS:").append(username).append(":").append(p.getScore()).toString();
+            sender.sendMessage(message);
             GameManager.getInstance().addOnlinePlayer(sender);
         } else {
-            System.out.println("LOGIN_FAILED Sent");
-            sender.sendMessage("LOGIN_FAILED");
+            sender.sendMessage("ERROR:" + "Incorrect Username or Password !");
         }
     }
 
-    private static void handleRegister(String[] parts, PlayerHandler sender) throws SQLException {
+    private static void handleRegister(final String[] parts, final PlayerHandler sender) throws SQLException {
         // Format: REGISTER:user:pass
-        String username = parts[1];
-        String password = parts[2];
+        final String username = parts[1];
+        final String password = parts[2];
 
-        Player p = new Player(username, password, 0, Player.PlayerStatus.IDLE);
-
+        final Player p = new Player(username, password, 0, Player.PlayerStatus.IDLE);
+      
         if (playerDao.register(p)) {
             sender.sendMessage("REGISTER_SUCCESS");
-            sender.setPlayer(p);
         } else {
-            sender.sendMessage("REGISTER_FAILED");
+            sender.sendMessage("ERROR:" + "There is Error in Creating your Account");
         }
-
     }
 
-    private static void handleInviteResponse(String[] parts, PlayerHandler sender) {
+    private static void handleInviteResponse(final String[] parts, final PlayerHandler sender) {
         if (parts.length < 3) {
             return;
         }
         //INVITE_RESPONSE:Thaowpsta:ACCPETED
 
-        String requester = parts[1];
-        String response = parts[2];
+        final String requester = parts[1];
+        final String response = parts[2];
+        
+        PlayerHandler reqHandler = GameManager.getInstance().getHandlerByName(requester);
+        
+    
 
-        if ("ACCEPTED".equals(response)) {
+        if ("ACCEPTED".equals(response)) {  
             GameManager.getInstance().startGame(requester, sender.getUsername());
+            if (reqHandler != null) {
+                reqHandler.sendMessage("INVITE_ACCEPTED:" + sender.getUsername());
+            }
         } else {
-            PlayerHandler reqHandler = GameManager.getInstance().getHandlerByName(requester);
-
             if (reqHandler != null) {
                 reqHandler.sendMessage("INVITE_REJECTED:" + sender.getUsername());
             }
         }
     }
 
-    private static void handleMove(String[] parts, PlayerHandler sender) {
+    private static void handleMove(final String[] parts, final PlayerHandler sender) {
         if (parts.length < 3) {
             return;
         }
 
-        GameRoom room = sender.getGameRoom();
+        final GameRoom room = sender.getGameRoom();
 
         if (room != null) {
             try {
-                int row = Integer.parseInt(parts[1]);
-                int col = Integer.parseInt(parts[2]);
+                final int row = Integer.parseInt(parts[1]);
+                final int col = Integer.parseInt(parts[2]);
                 room.handleMove(sender, row, col);
             } catch (NumberFormatException e) {
-                System.out.println("Invalid move format");
+                sender.sendMessage("ERROR:Invalid move format");
             }
         }
     }
 
-    private static void handleGetHistory(PlayerHandler sender) throws SQLException {
+    private static void handleGetHistory(final PlayerHandler sender) throws SQLException {
         if (sender.getPlayer() == null) {
             return; // Guard clause
         }
 
-        int myId = sender.getPlayer().getId();
+        final int myId = sender.getPlayer().getId();
 
-        List<GameHistoryDTO> games = gameDao.getGameHistory(myId);
+        final List<GameHistoryDTO> games = gameDao.getGameHistory(myId);
 
         // Build a response string
         // Format: HISTORY_RESPONSE:id,opp,res,date;id,opp,res,date;...
-        StringBuilder sb = new StringBuilder("HISTORY_RESPONSE:");
+        final StringBuilder sb = new StringBuilder("HISTORY_RESPONSE:");
 
         for (GameHistoryDTO game : games) {
             sb.append(game.toString()).append(";");

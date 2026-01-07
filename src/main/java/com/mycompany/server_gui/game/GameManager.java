@@ -1,22 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.server_gui.game;
 
-/**
- *
- * @author DELL
- */
 
+import com.mycompany.server_gui.model.Player.PlayerStatus;
 import java.util.Vector;
-
 import java.util.concurrent.ConcurrentHashMap;
-
 import com.mycompany.server_gui.network.PlayerHandler;
 
 public class GameManager {
-
     private static GameManager instance;
 
     // Thread-safe map to store online players (Username -> Handler)
@@ -77,8 +67,9 @@ public class GameManager {
     // --- Logic & Routing ---
     public void handleInvitation(String senderUsername, String targetUsername) {
         PlayerHandler target = onlinePlayers.get(targetUsername);
+        
         if (target != null) {
-            if (target.getStatus().equals("IDLE")) {
+            if (target.getStatus().equals(PlayerStatus.IDLE)) {
                 target.sendMessage("RECEIVE_INVITE:" + senderUsername);
             } else {
                 PlayerHandler sender = onlinePlayers.get(senderUsername);

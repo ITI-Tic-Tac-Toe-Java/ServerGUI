@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.server_gui.dao;
 
-/**
- *
- * @author DELL
- */
 import com.mycompany.server_gui.db.DBUtil;
 import com.mycompany.server_gui.model.Player;
 import java.sql.*;
@@ -31,6 +23,7 @@ public class PlayerDao {
                 p.setUsername(rs.getString("username"));
                 p.setPassword(rs.getString("password"));
                 p.setScore(rs.getInt("score"));
+                p.setStatus(Player.PlayerStatus.IDLE);
                 return p;
             }
         }
@@ -39,7 +32,7 @@ public class PlayerDao {
     }
 
     public boolean register(Player player) throws SQLException {
-        String query = "INSERT INTO player (username, password, score, status) VALUES (?, ?, 0, 'IDLE')";
+        String query = "INSERT INTO player (username, password, score) VALUES (?, ?, 0)";
         Connection con = DBUtil.getConnection();
         PreparedStatement ps = con.prepareStatement(query);
 
