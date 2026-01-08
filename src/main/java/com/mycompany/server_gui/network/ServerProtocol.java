@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ServerProtocol {
-
+    
     private static final String LOGIN = "LOGIN";
     private static final String REGISTER = "REGISTER";
     private static final String LOGOUT = "LOGOUT";
@@ -42,8 +42,6 @@ public class ServerProtocol {
                 }
                 break;
             }
-            break;
-
             case REGISTER: {
                 try {
                     // Format: REGISTER:username:password
