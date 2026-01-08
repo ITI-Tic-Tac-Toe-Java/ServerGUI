@@ -42,8 +42,7 @@ public class ServerProtocol {
                 }
                 break;
             }
-            break;
-
+            
             case REGISTER: {
                 try {
                     // Format: REGISTER:username:password
