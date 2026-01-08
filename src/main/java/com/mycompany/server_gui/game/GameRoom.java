@@ -8,10 +8,8 @@ package com.mycompany.server_gui.game;
  *
  * @author DELL
  */
-
 import com.mycompany.server_gui.model.Player.PlayerStatus;
 import com.mycompany.server_gui.network.PlayerHandler;
-
 
 import com.mycompany.server_gui.utils.PlayerSymbol;
 
@@ -21,10 +19,14 @@ public class GameRoom {
     private final PlayerHandler playerO;
     private final XOGameLogic gameLogic;
 
+    private PlayerSymbol currentTurn;
+
     public GameRoom(PlayerHandler p1, PlayerHandler p2) {
         this.playerX = p1;
         this.playerO = p2;
         this.gameLogic = new XOGameLogic();
+
+        this.currentTurn = PlayerSymbol.X;
 
         // Update Status to busy
         playerX.setStatus(PlayerStatus.PLAYING);
@@ -48,14 +50,18 @@ public class GameRoom {
     }
 
     public void handleMove(PlayerHandler sender, int row, int col) {
-        PlayerSymbol currentSymbol = sender.getPlayerSymbol();
+        PlayerSymbol senderSymbol = sender.getPlayerSymbol();
+
+        if (senderSymbol != currentTurn) {
+            return;
+        }
 
         // 1. Validate Move using your XOGameLogic
-        if (gameLogic.makeMove(row, col, currentSymbol)) {
+        if (gameLogic.makeMove(row, col, senderSymbol)) {
 
             // 2. Broadcast Valid Move to BOTH players
             // Format: MOVE_VALID:row:col:symbol
-            String moveMsg = "MOVE_VALID:" + row + ":" + col + ":" + currentSymbol;
+            String moveMsg = "MOVE_VALID:" + row + ":" + col + ":" + senderSymbol;
             playerX.sendMessage(moveMsg);
             playerO.sendMessage(moveMsg);
 
@@ -70,8 +76,14 @@ public class GameRoom {
                 playerO.sendMessage("GAME_OVER:DRAW");
                 //save game
                 closeRoom();
+            } else {
+                switchTurn();
             }
         }
+    }
+
+    private void switchTurn() {
+        currentTurn = (currentTurn == PlayerSymbol.X) ? PlayerSymbol.O : PlayerSymbol.X;
     }
 
     public void handleDisconnect(PlayerHandler disconnectedPlayer) {
@@ -90,7 +102,7 @@ public class GameRoom {
         // Reset players to IDLE
         playerX.setStatus(PlayerStatus.IDLE);
         playerO.setStatus(PlayerStatus.IDLE);
-        
+
         playerX.setGameRoom(null);
         playerO.setGameRoom(null);
 
