@@ -8,10 +8,12 @@ package com.mycompany.server_gui.game;
  *
  * @author DELL
  */
+import com.mycompany.server_gui.dao.PlayerDao;
 import com.mycompany.server_gui.model.Player.PlayerStatus;
 import com.mycompany.server_gui.network.PlayerHandler;
 
 import com.mycompany.server_gui.utils.PlayerSymbol;
+import java.sql.SQLException;
 
 public class GameRoom {
 
@@ -20,6 +22,7 @@ public class GameRoom {
     private final XOGameLogic gameLogic;
 
     private PlayerSymbol currentTurn;
+    private final PlayerDao playerDao;
 
     public GameRoom(PlayerHandler p1, PlayerHandler p2) {
         this.playerX = p1;
@@ -27,7 +30,8 @@ public class GameRoom {
         this.gameLogic = new XOGameLogic();
 
         this.currentTurn = PlayerSymbol.X;
-
+        this.playerDao = new PlayerDao();
+        
         // Update Status to busy
         playerX.setStatus(PlayerStatus.PLAYING);
         playerO.setStatus(PlayerStatus.PLAYING);
@@ -67,11 +71,17 @@ public class GameRoom {
 
             // 3. Check Game State
             if (gameLogic.hasPlayerWon(sender)) {
+
+                updateWinnerScore(sender);
+
                 sender.sendMessage("GAME_OVER:WIN");
                 getOpponent(sender).sendMessage("GAME_OVER:LOSE");
                 //save game
                 closeRoom();
             } else if (gameLogic.isDraw()) {
+                
+                updateDrawScore();
+                
                 playerX.sendMessage("GAME_OVER:DRAW");
                 playerO.sendMessage("GAME_OVER:DRAW");
                 //save game
@@ -79,6 +89,30 @@ public class GameRoom {
             } else {
                 switchTurn();
             }
+        }
+    }
+
+    private void updateWinnerScore(PlayerHandler winner) {
+        try {
+            int newScore = winner.getScore() + 10;
+            playerDao.updateScore(winner.getPlayer().getId(), newScore);
+            winner.setScore(newScore);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void updateDrawScore() {
+        try {
+            int newScoreX = playerX.getScore() + 5;
+            playerDao.updateScore(playerX.getPlayer().getId(), newScoreX);
+            playerX.setScore(newScoreX);
+            
+            int newScoreO = playerO.getScore() + 5;
+            playerDao.updateScore(playerO.getPlayer().getId(), newScoreO);
+            playerO.setScore(newScoreO);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
 

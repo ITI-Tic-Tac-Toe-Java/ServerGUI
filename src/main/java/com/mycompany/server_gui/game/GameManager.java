@@ -5,6 +5,7 @@ import com.mycompany.server_gui.model.Player.PlayerStatus;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import com.mycompany.server_gui.network.PlayerHandler;
+import java.util.ArrayList;
 
 public class GameManager {
     private static GameManager instance;
@@ -51,6 +52,10 @@ public class GameManager {
 
     // --- Broadcasting ---
     public void broadcastPlayerList() {
+        
+        ArrayList<PlayerHandler> sortedPlayers = new ArrayList<>(onlinePlayers.values());
+        sortedPlayers.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+        
         // Format: PLAYER_LIST:user1,score,status;user2,score,status;...
         StringBuilder sb = new StringBuilder("PLAYER_LIST:");
         for (PlayerHandler p : onlinePlayers.values()) {
