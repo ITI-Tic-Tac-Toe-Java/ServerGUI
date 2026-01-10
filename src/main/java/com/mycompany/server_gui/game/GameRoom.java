@@ -31,7 +31,7 @@ public class GameRoom {
 
         this.currentTurn = PlayerSymbol.X;
         this.playerDao = new PlayerDao();
-        
+
         // Update Status to busy
         playerX.setStatus(PlayerStatus.PLAYING);
         playerO.setStatus(PlayerStatus.PLAYING);
@@ -73,18 +73,26 @@ public class GameRoom {
             if (gameLogic.hasPlayerWon(sender)) {
 
                 updateWinnerScore(sender);
-                
-                sender.sendMessage("GAME_OVER:WIN:"+sender.getPlayer().getScore());
+
+                sender.sendMessage("GAME_OVER:WIN:" + sender.getPlayer().getScore());
                 getOpponent(sender).sendMessage("GAME_OVER:LOSE");
                 //save game
+                String allSteps = gameLogic.getSteps();
+                sender.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
+                getOpponent(sender).sendMessage("SAVE_REPLAY_DATA:" + allSteps);
+
                 closeRoom();
             } else if (gameLogic.isDraw()) {
-                
+
                 updateDrawScore();
-                
-                playerX.sendMessage("GAME_OVER:DRAW:"+playerX.getScore());
-                playerO.sendMessage("GAME_OVER:DRAW:"+playerO.getScore());
+
+                playerX.sendMessage("GAME_OVER:DRAW:" + playerX.getScore());
+                playerO.sendMessage("GAME_OVER:DRAW:" + playerO.getScore());
                 //save game
+                String allSteps = gameLogic.getSteps();
+                playerX.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
+                playerO.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
+                
                 closeRoom();
             } else {
                 switchTurn();
@@ -101,13 +109,13 @@ public class GameRoom {
             ex.printStackTrace();
         }
     }
-    
+
     private void updateDrawScore() {
         try {
             int newScoreX = playerX.getScore() + 5;
             playerDao.updateScore(playerX.getPlayer().getId(), newScoreX);
             playerX.setScore(newScoreX);
-            
+
             int newScoreO = playerO.getScore() + 5;
             playerDao.updateScore(playerO.getPlayer().getId(), newScoreO);
             playerO.setScore(newScoreO);
@@ -128,7 +136,7 @@ public class GameRoom {
         closeRoom();
     }
 
-    private PlayerHandler getOpponent(PlayerHandler p) {
+    public PlayerHandler getOpponent(PlayerHandler p) {
         return p == playerX ? playerO : playerX;
     }
 

@@ -25,7 +25,7 @@ public class XOGameLogic {
         if (board[r][c] != EMPTY) {
             return false;
         }
-        
+
         board[r][c] = symbol.ordinal() + 1;
         stepCount++;
         steps.append(stepCount).append(":").append(r).append(",").append(c).append(",").append(symbol).append(";");
@@ -34,8 +34,8 @@ public class XOGameLogic {
 
     public boolean hasPlayerWon(PlayerHandler player) {
         int symbol = player.getPlayerSymbol().ordinal() + 1;
-        
-        return     (board[0][0] == symbol && board[0][1] == symbol && board[0][2] == symbol)
+
+        return (board[0][0] == symbol && board[0][1] == symbol && board[0][2] == symbol)
                 || (board[1][0] == symbol && board[1][1] == symbol && board[1][2] == symbol)
                 || (board[2][0] == symbol && board[2][1] == symbol && board[2][2] == symbol)
                 || (board[0][0] == symbol && board[1][0] == symbol && board[2][0] == symbol)
@@ -49,9 +49,12 @@ public class XOGameLogic {
         return stepCount == 9;
     }
 
-  
     public void reset() {
         board = new int[3][3];
         stepCount = 0;
+    }
+
+    public String getSteps() {
+        return steps.toString();
     }
 }

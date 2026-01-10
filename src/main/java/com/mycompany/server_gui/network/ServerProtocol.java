@@ -18,6 +18,8 @@ public class ServerProtocol {
     private static final String SEND_INVITE = "SEND_INVITE";
     private static final String INVITE_RESPONSE = "INVITE_RESPONSE";
     private static final String GET_PLAYERS = "GET_ONLINE_PLAYERS";
+    private static final String REPLAY_REQUEST = "REPLAY_REQUEST";
+    private static final String QUIT_MATCH = "QUIT_MATCH";
     private static final String ERROR = "ERROR";
     private static final String GET_HISTORY = "GET_GAME_HISTORY";
     private static final String GAME_DISCONNECT = "GAME_DISCONNECT";
@@ -101,10 +103,10 @@ public class ServerProtocol {
         }
     }
 
-    private static void handleDisconnect(PlayerHandler player){
+    private static void handleDisconnect(PlayerHandler player) {
         player.getGameRoom().handleDisconnect(player);
     }
-    
+
     private static void handleLogin(final String[] parts, final PlayerHandler sender) throws SQLException {
         if (parts.length < 3) {
 
@@ -166,20 +168,40 @@ public class ServerProtocol {
     }
 
     private static void handleMove(final String[] parts, final PlayerHandler sender) {
-        if (parts.length < 3) {
+        if (parts.length < 2) {
             return;
         }
 
         final GameRoom room = sender.getGameRoom();
+        if (room == null) {
+            return;
+        }
 
-        if (room != null) {
-            try {
-                final int row = Integer.parseInt(parts[1]);
-                final int col = Integer.parseInt(parts[2]);
-                room.handleMove(sender, row, col);
-            } catch (NumberFormatException e) {
-                sender.sendMessage("ERROR:Invalid move format");
-            }
+        String action = parts[1];
+
+        switch (action) {
+            case REPLAY_REQUEST:
+                PlayerHandler opponent = room.getOpponent(sender);
+                if (opponent != null) {
+                    opponent.sendMessage("REPLAY_REQUESTED_BY:" + sender.getUsername());
+                }
+                break;
+
+            case QUIT_MATCH:
+                handleDisconnect(sender);
+                break;
+
+            default:
+                try {
+                    if (parts.length >= 3) {
+                        final int row = Integer.parseInt(parts[1]);
+                        final int col = Integer.parseInt(parts[2]);
+                        room.handleMove(sender, row, col);
+                    }
+                } catch (NumberFormatException e) {
+                    sender.sendMessage("ERROR:Invalid move format");
+                }
+                break;
         }
     }
 

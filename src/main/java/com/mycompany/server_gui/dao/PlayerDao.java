@@ -32,12 +32,13 @@ public class PlayerDao {
     }
 
     public boolean register(Player player) throws SQLException {
-        String query = "INSERT INTO player (username, password, score) VALUES (?, ?, 0)";
+        String query = "INSERT INTO player (username, password, score, status) VALUES (?, ?, 0, ?)";
         Connection con = DBUtil.getConnection();
         PreparedStatement ps = con.prepareStatement(query);
 
         ps.setString(1, player.getUsername());
         ps.setString(2, player.getPassword());
+        ps.setString(3, Player.PlayerStatus.OFFLINE.name());
 
         return ps.executeUpdate() > 0;
 
