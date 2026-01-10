@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ServerProtocol {
-    
+
     private static final String LOGIN = "LOGIN";
     private static final String REGISTER = "REGISTER";
     private static final String LOGOUT = "LOGOUT";
@@ -20,6 +20,7 @@ public class ServerProtocol {
     private static final String GET_PLAYERS = "GET_ONLINE_PLAYERS";
     private static final String ERROR = "ERROR";
     private static final String GET_HISTORY = "GET_GAME_HISTORY";
+    private static final String GAME_DISCONNECT = "GAME_DISCONNECT";
     private static final GameDao gameDao = new GameDao();
     private static final PlayerDao playerDao = new PlayerDao();
 
@@ -42,8 +43,6 @@ public class ServerProtocol {
                 }
                 break;
             }
-
-            
 
             case REGISTER: {
                 try {
@@ -93,11 +92,19 @@ public class ServerProtocol {
                 sender.closeResources();
                 break;
 
+            case GAME_DISCONNECT:
+                handleDisconnect(sender);
+                break;
+
             default:
                 System.out.println("Unknown command from " + sender.getUsername() + ": " + message);
         }
     }
 
+    private static void handleDisconnect(PlayerHandler player){
+        player.getGameRoom().handleDisconnect(player);
+    }
+    
     private static void handleLogin(final String[] parts, final PlayerHandler sender) throws SQLException {
         if (parts.length < 3) {
 
@@ -127,7 +134,7 @@ public class ServerProtocol {
         final String password = parts[2];
 
         final Player p = new Player(username, password, 0, Player.PlayerStatus.IDLE);
-      
+
         if (playerDao.register(p)) {
             sender.sendMessage("REGISTER_SUCCESS");
         } else {
@@ -143,12 +150,10 @@ public class ServerProtocol {
 
         final String requester = parts[1];
         final String response = parts[2];
-        
-        PlayerHandler reqHandler = GameManager.getInstance().getHandlerByName(requester);
-        
-    
 
-        if ("ACCEPTED".equals(response)) {  
+        PlayerHandler reqHandler = GameManager.getInstance().getHandlerByName(requester);
+
+        if ("ACCEPTED".equals(response)) {
             GameManager.getInstance().startGame(requester, sender.getUsername());
             if (reqHandler != null) {
                 reqHandler.sendMessage("INVITE_ACCEPTED:" + sender.getUsername());

@@ -73,8 +73,8 @@ public class GameRoom {
             if (gameLogic.hasPlayerWon(sender)) {
 
                 updateWinnerScore(sender);
-
-                sender.sendMessage("GAME_OVER:WIN");
+                
+                sender.sendMessage("GAME_OVER:WIN:"+sender.getPlayer().getScore());
                 getOpponent(sender).sendMessage("GAME_OVER:LOSE");
                 //save game
                 closeRoom();
@@ -82,8 +82,8 @@ public class GameRoom {
                 
                 updateDrawScore();
                 
-                playerX.sendMessage("GAME_OVER:DRAW");
-                playerO.sendMessage("GAME_OVER:DRAW");
+                playerX.sendMessage("GAME_OVER:DRAW:"+playerX.getScore());
+                playerO.sendMessage("GAME_OVER:DRAW:"+playerO.getScore());
                 //save game
                 closeRoom();
             } else {

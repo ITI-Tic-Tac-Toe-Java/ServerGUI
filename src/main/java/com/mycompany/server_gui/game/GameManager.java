@@ -53,7 +53,7 @@ public class GameManager {
     // --- Broadcasting ---
     public void broadcastPlayerList() {
         
-        ArrayList<PlayerHandler> sortedPlayers = new ArrayList<>(onlinePlayers.values());
+        ArrayList<PlayerHandler> sortedPlayers = new ArrayList<>();
         sortedPlayers.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
         
         // Format: PLAYER_LIST:user1,score,status;user2,score,status;...
