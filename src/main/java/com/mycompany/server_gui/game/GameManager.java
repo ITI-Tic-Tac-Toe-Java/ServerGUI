@@ -1,20 +1,20 @@
 package com.mycompany.server_gui.game;
 
-
 import com.mycompany.server_gui.model.Player.PlayerStatus;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import com.mycompany.server_gui.network.PlayerHandler;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import javafx.application.Platform;
 
 public class GameManager {
+
     private static GameManager instance;
 
-    // Thread-safe map to store online players (Username -> Handler)
     private final ConcurrentHashMap<String, PlayerHandler> onlinePlayers = new ConcurrentHashMap<>();
-
-    // Thread-safe list to track active games
     private final Vector<GameRoom> activeGames = new Vector<>();
+    private Runnable uiUpdateCallback;
 
     private GameManager() {
     }
@@ -26,11 +26,21 @@ public class GameManager {
         return instance;
     }
 
-    // --- Player Management ---
+    public void setUiUpdateCallback(Runnable callback) {
+        this.uiUpdateCallback = callback;
+    }
+
+    private void notifyUI() {
+        if (uiUpdateCallback != null) {
+            Platform.runLater(uiUpdateCallback);
+        }
+    }
+
     public void addOnlinePlayer(PlayerHandler player) {
         if (player != null && player.getUsername() != null) {
             onlinePlayers.put(player.getUsername(), player);
             broadcastPlayerList();
+            notifyUI();
         }
     }
 
@@ -38,10 +48,10 @@ public class GameManager {
         if (player != null && player.getUsername() != null) {
             onlinePlayers.remove(player.getUsername());
             broadcastPlayerList();
+            notifyUI();
         }
     }
 
-    
     public PlayerHandler getHandlerByName(String username) {
         return onlinePlayers.get(username);
     }
@@ -50,15 +60,12 @@ public class GameManager {
         return onlinePlayers.size();
     }
 
-    // --- Broadcasting ---
     public void broadcastPlayerList() {
-        
-        ArrayList<PlayerHandler> sortedPlayers = new ArrayList<>();
-        sortedPlayers.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
-        
-        // Format: PLAYER_LIST:user1,score,status;user2,score,status;...
+        List<PlayerHandler> values = new ArrayList<>(onlinePlayers.values());
+        values.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+
         StringBuilder sb = new StringBuilder("PLAYER_LIST:");
-        for (PlayerHandler p : onlinePlayers.values()) {
+        for (PlayerHandler p : values) {
             sb.append(p.getUsername()).append(",")
                     .append(p.getScore()).append(",")
                     .append(p.getStatus()).append(";");
@@ -69,10 +76,9 @@ public class GameManager {
         }
     }
 
-    // --- Logic & Routing ---
     public void handleInvitation(String senderUsername, String targetUsername) {
         PlayerHandler target = onlinePlayers.get(targetUsername);
-        
+
         if (target != null) {
             if (target.getStatus().equals(PlayerStatus.IDLE)) {
                 target.sendMessage("RECEIVE_INVITE:" + senderUsername);
@@ -93,10 +99,26 @@ public class GameManager {
             GameRoom room = new GameRoom(p1, p2);
             activeGames.add(room);
             room.startGame();
+            notifyUI();
         }
     }
 
     public void removeGame(GameRoom room) {
         activeGames.remove(room);
+        notifyUI();
+    }
+
+    public int getOnlineCount() {
+        return onlinePlayers.size();
+    }
+
+    public int getInGameCount() {
+        int count = 0;
+        for (PlayerHandler handler : onlinePlayers.values()) {
+            if (handler.getGameRoom() != null) {
+                count++;
+            }
+        }
+        return count;
     }
 }

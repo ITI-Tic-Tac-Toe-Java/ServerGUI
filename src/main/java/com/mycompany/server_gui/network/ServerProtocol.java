@@ -125,6 +125,7 @@ public class ServerProtocol {
             String message = new StringBuilder("LOGIN_SUCCESS:").append(username).append(":").append(p.getScore()).toString();
             sender.sendMessage(message);
             GameManager.getInstance().addOnlinePlayer(sender);
+            
         } else {
             sender.sendMessage("ERROR:" + "Incorrect Username or Password !");
         }

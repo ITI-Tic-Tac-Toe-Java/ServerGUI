@@ -6,7 +6,6 @@ import java.sql.*;
 
 public class PlayerDao {
 
-    
     public Player login(String username, String password) throws SQLException {
         String query = "SELECT * FROM player WHERE username = ? AND password = ?";
 
@@ -48,10 +47,22 @@ public class PlayerDao {
         String query = "UPDATE player SET score = ? WHERE player_id = ?";
         Connection con = DBUtil.getConnection();
         PreparedStatement ps = con.prepareStatement(query);
-        
+
         ps.setInt(1, newScore);
         ps.setInt(2, playerId);
         ps.executeUpdate();
 
+    }
+
+    public int getAllPlayersCount() throws SQLException {
+        String query = "SELECT COUNT(*) FROM player";
+        Connection con = DBUtil.getConnection();
+        PreparedStatement ps = con.prepareStatement(query);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
     }
 }
