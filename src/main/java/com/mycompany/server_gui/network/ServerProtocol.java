@@ -6,8 +6,11 @@ import com.mycompany.server_gui.game.GameManager;
 import com.mycompany.server_gui.game.GameRoom;
 import com.mycompany.server_gui.model.GameHistoryDTO;
 import com.mycompany.server_gui.model.Player;
+import com.mycompany.server_gui.model.Player.PlayerStatus;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerProtocol {
 
@@ -91,6 +94,16 @@ public class ServerProtocol {
                 break;
 
             case LOGOUT:
+                GameManager.getInstance().removePlayer(sender);
+                PlayerDao playerdao = new PlayerDao();
+
+                 {
+                    try {
+                        playerdao.updatStatus(sender.getPlayer().getId(), PlayerStatus.OFFLINE.name());
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ServerProtocol.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
                 sender.closeResources();
                 break;
 
@@ -125,7 +138,7 @@ public class ServerProtocol {
             String message = new StringBuilder("LOGIN_SUCCESS:").append(username).append(":").append(p.getScore()).toString();
             sender.sendMessage(message);
             GameManager.getInstance().addOnlinePlayer(sender);
-            
+
         } else {
             sender.sendMessage("ERROR:" + "Incorrect Username or Password !");
         }

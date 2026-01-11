@@ -54,6 +54,17 @@ public class PlayerDao {
 
     }
 
+    public void updatStatus(int playerId, String status) throws SQLException {
+        String query = "UPDATE player SET status = ? WHERE player_id = ?";
+        Connection con = DBUtil.getConnection();
+        PreparedStatement ps = con.prepareStatement(query);
+
+        ps.setString(1, status);
+        ps.setInt(2, playerId);
+        ps.executeUpdate();
+
+    }
+
     public int getAllPlayersCount() throws SQLException {
         String query = "SELECT COUNT(*) FROM player";
         Connection con = DBUtil.getConnection();

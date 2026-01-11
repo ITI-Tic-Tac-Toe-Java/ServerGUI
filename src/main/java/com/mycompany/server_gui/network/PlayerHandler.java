@@ -42,7 +42,7 @@ public class PlayerHandler extends Thread {
                 ServerProtocol.processMessage(msg, this);
             }
         } catch (IOException ex) {
-            Functions.showErrorAlert(new IOException("Problem in receving message : " + ex.getLocalizedMessage()));
+            ex.printStackTrace();
         }
 
     }
@@ -74,7 +74,7 @@ public class PlayerHandler extends Thread {
                 br.close();
             }
         } catch (IOException e) {
-            Functions.showErrorAlert(new IOException("Error closing resources: " + e.getMessage()));
+            e.printStackTrace();
         }
     }
 
