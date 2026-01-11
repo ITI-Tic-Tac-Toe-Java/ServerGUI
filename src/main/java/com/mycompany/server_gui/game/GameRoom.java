@@ -14,6 +14,8 @@ import com.mycompany.server_gui.network.PlayerHandler;
 
 import com.mycompany.server_gui.utils.PlayerSymbol;
 import java.sql.SQLException;
+import java.util.List;
+import javafx.util.Pair;
 
 public class GameRoom {
 
@@ -70,16 +72,32 @@ public class GameRoom {
             playerO.sendMessage(moveMsg);
 
             // 3. Check Game State
-            if (gameLogic.hasPlayerWon(sender)) {
+            if (gameLogic.hasPlayerWon(sender.getPlayerSymbol())) {
 
                 updateWinnerScore(sender);
 
-                sender.sendMessage("GAME_OVER:WIN:" + sender.getPlayer().getScore());
-                getOpponent(sender).sendMessage("GAME_OVER:LOSE");
-                //save game
+                // 1. Get the coordinates String (e.g., "0,0;0,1;0,2;")
+                String winCoords = getWinningCoordsAsString();
+
+                // 2. Send to WINNER: GAME_OVER:WIN:Score:Coords
+                sender.sendMessage("GAME_OVER:WIN:" + sender.getPlayer().getScore() + ":" + winCoords);
+
+                // 3. Send to LOSER: GAME_OVER:LOSE:Coords
+                getOpponent(sender).sendMessage("GAME_OVER:LOSE:" + winCoords);
+
+                // --- START CHANGE ---
+                // 1. Get current steps
                 String allSteps = gameLogic.getSteps();
-                sender.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
-                getOpponent(sender).sendMessage("SAVE_REPLAY_DATA:" + allSteps);
+
+                // 2. Append the winner symbol and WIN flag
+                String stepsWithWinner = allSteps + sender.getPlayerSymbol() + ":WIN";
+
+                // 3. Send the MODIFIED string
+                sender.sendMessage("SAVE_REPLAY_DATA:" + stepsWithWinner);
+                getOpponent(sender).sendMessage("SAVE_REPLAY_DATA:" + stepsWithWinner);
+                
+                System.out.println("steps from server : " + stepsWithWinner);
+                // --- END CHANGE ---
 
                 closeRoom();
             } else if (gameLogic.isDraw()) {
@@ -92,7 +110,7 @@ public class GameRoom {
                 String allSteps = gameLogic.getSteps();
                 playerX.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
                 playerO.sendMessage("SAVE_REPLAY_DATA:" + allSteps);
-                
+
                 closeRoom();
             } else {
                 switchTurn();
@@ -140,6 +158,19 @@ public class GameRoom {
         return p == playerX ? playerO : playerX;
     }
 
+    private String getWinningCoordsAsString() {
+        List<Pair<Integer, Integer>> coords = gameLogic.getWinningCoords();
+        if (coords == null || coords.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Pair<Integer, Integer> p : coords) {
+            // Format: row,col;
+            sb.append(p.getKey()).append(",").append(p.getValue()).append(";");
+        }
+        return sb.toString();
+    }
+
     private void closeRoom() {
         // Reset players to IDLE
         playerX.setStatus(PlayerStatus.IDLE);
@@ -152,4 +183,5 @@ public class GameRoom {
         GameManager.getInstance().removeGame(this);
         GameManager.getInstance().broadcastPlayerList();
     }
+
 }

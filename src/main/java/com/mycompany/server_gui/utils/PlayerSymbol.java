@@ -8,4 +8,4 @@ package com.mycompany.server_gui.utils;
  *
  * @author DELL
  */
-public enum PlayerSymbol {X,O}
+public enum PlayerSymbol {EMPTY,X,O}
