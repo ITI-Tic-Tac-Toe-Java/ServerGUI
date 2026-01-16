@@ -108,7 +108,7 @@ public class ServerProtocol {
                 break;
 
             case GAME_DISCONNECT:
-                handleDisconnect(sender);
+                handleGameDisconnect(sender);
                 break;
 
             default:
@@ -116,8 +116,11 @@ public class ServerProtocol {
         }
     }
 
-    private static void handleDisconnect(PlayerHandler player) {
-        player.getGameRoom().handleDisconnect(player);
+    private static void handleGameDisconnect(PlayerHandler player) {
+        GameManager.getInstance().removePlayer(player);
+        if (player.getGameRoom() != null) {
+            player.getGameRoom().handleDisconnect(player);
+        }
     }
 
     private static void handleLogin(final String[] parts, final PlayerHandler sender) throws SQLException {
@@ -202,7 +205,7 @@ public class ServerProtocol {
                 break;
 
             case QUIT_MATCH:
-                handleDisconnect(sender);
+                handleGameDisconnect(sender);
                 break;
 
             default:

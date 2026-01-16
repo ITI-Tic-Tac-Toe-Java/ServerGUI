@@ -41,10 +41,16 @@ public class GameServer extends Thread {
                 if (keepRunning) {
                     Functions.showErrorAlert(ex);
                     if (newPlayer != null) {
-                        newPlayer.sendMessage("ERROR:SERVER_DISCONNECT");
+                        broadcastDisconnection();
                     }
                 }
             }
+        }
+    }
+    
+    public void broadcastDisconnection(){
+        for(PlayerHandler p : GameManager.getInstance().getOnlinePlayers().values()){
+            p.sendMessage("ERROR:SERVER_DISCONNECT");
         }
     }
     
@@ -53,7 +59,7 @@ public class GameServer extends Thread {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
-                newPlayer.sendMessage("ERROR:SERVER_DISCONNECT");
+                broadcastDisconnection();
             }
             
         } catch (IOException ex) {

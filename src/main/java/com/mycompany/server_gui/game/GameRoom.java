@@ -85,7 +85,7 @@ public class GameRoom {
                 // 3. Send to LOSER: GAME_OVER:LOSE:Coords
                 getOpponent(sender).sendMessage("GAME_OVER:LOSE:" + winCoords);
 
-                // --- START CHANGE ---
+               
                 // 1. Get current steps
                 String allSteps = gameLogic.getSteps();
 
@@ -96,9 +96,6 @@ public class GameRoom {
                 sender.sendMessage("SAVE_REPLAY_DATA:" + stepsWithWinner);
                 getOpponent(sender).sendMessage("SAVE_REPLAY_DATA:" + stepsWithWinner);
                 
-                System.out.println("steps from server : " + stepsWithWinner);
-                // --- END CHANGE ---
-
                 closeRoom();
             } else if (gameLogic.isDraw()) {
 

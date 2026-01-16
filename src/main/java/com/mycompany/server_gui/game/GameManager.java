@@ -13,6 +13,7 @@ public class GameManager {
     private static GameManager instance;
 
     private final ConcurrentHashMap<String, PlayerHandler> onlinePlayers = new ConcurrentHashMap<>();
+
     private final Vector<GameRoom> activeGames = new Vector<>();
     private Runnable uiUpdateCallback;
 
@@ -24,6 +25,10 @@ public class GameManager {
             instance = new GameManager();
         }
         return instance;
+    }
+
+    public ConcurrentHashMap<String, PlayerHandler> getOnlinePlayers() {
+        return onlinePlayers;
     }
 
     public void setUiUpdateCallback(Runnable callback) {
